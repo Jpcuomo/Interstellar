@@ -5,6 +5,7 @@
 
 # Proyecto: Creación de videojuego libre
 
+![Texto alternativo](ruta/a/la/imagen.jpg)
 
 
 ## Descripción:
