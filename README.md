@@ -31,3 +31,7 @@ El juego presenta dos niveles de dificultad creciente
 
 ![Texto alternativo](https://github.com/Jpcuomo/Interstellar/blob/main/ejemplo_juego.png)
 
+## Portada
+
+![Texto alternativo](https://github.com/Jpcuomo/Interstellar/blob/main/portada.png)
+
