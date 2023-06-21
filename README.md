@@ -27,6 +27,7 @@ El puntaje final del nivel contempla un bonus por el tiempo sobrante, por lo que
 
 El juego presenta dos niveles de dificultad creciente
 
+## Visualización del juego:
 
 ![Texto alternativo](https://github.com/Jpcuomo/Interstellar/blob/main/ejemplo_juego.png)
 
