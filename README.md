@@ -15,7 +15,8 @@ El jugador perderá una vida si:
 - Colisiona con alguna nave alienígena;
 - No completa el objetivo de aniquilar a todas las aliens dentro del tiempo requerido.
 
-El jugador posee tres vidas en total
+El jugador posee tres vidas en total y se actualizan en cada nivel.
+
 Las naves enemigas están dispuestas en tres filas de ocho naves cada una.
 
 Las naves de la primera fila valen 30 puntos, las de la segunda fila valen 20 puntos y las de la primera 10 puntos.
