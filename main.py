@@ -35,10 +35,6 @@ flag_nivel_dos = False
 
 portada = Portada(screen, ANCHO, ALTO)
 
-BEGINING_TEXT = pg.USEREVENT + 0
-font = pg.font.Font(None, 36)
-text = font.render("MISSION I", True, (255, 255, 255))
-pg.time.set_timer(BEGINING_TEXT, 3000)
 flag_texto_inicio = True
 
 mostrar_portada = True
