@@ -1,7 +1,5 @@
 import pygame as pg
 import colores
-import sqlite3
-import re
 import sys
 
 from alien_fleet import Alien_fleet
@@ -16,12 +14,13 @@ from ship import Ship
 from stars import Stars
 from tiempo import Time
 from vidas import Vida
+import base_de_datos_puntuacion
 
 
 
 class NivelDos:
     '''Clase principal que maneja las generalidades del juego Interstellar'''
-    def __init__(self) -> None:
+    def __init__(self, iniciales, puntaje):
         pg.init()
         pg.mixer.init()
 
@@ -44,13 +43,16 @@ class NivelDos:
         # Rectangulo limite inferior de pantalla
         self.rect_inferior = pg.Rect(0, self.ALTO, self.ANCHO, 2)
 
+        self.dicc_jugador = {'iniciales':iniciales, 'puntaje':puntaje}
+    
         self.FPS = 60
-        self.score = 0
+        self.score = self.dicc_jugador['puntaje'] # Pintaje recibido de nivel I
         self.RELOJ = pg.time.Clock()
         self.minutos = 0
         self.segundos = 40
         self.global_score = 0
         self.contador_colisiones = 0
+        
 
         self.BEGINING_TEXT = pg.USEREVENT + 0
         font = pg.font.Font(None, 36)
@@ -61,6 +63,8 @@ class NivelDos:
         self.mostrar_portada = True
 
         self.ganaste = False
+        
+        self.guardar_datos = True
 
 
         '''Instancias de clases #####################################################################'''
@@ -87,7 +91,7 @@ class NivelDos:
         self.vida2 = Vida(self.screen, 95, 12)
         self.vida3 = Vida(self.screen, 150, 12)
 
-        self.game_over = GameOver(self.screen, self.ANCHO, self.ALTO)
+        self.game_over = GameOver(self.screen, self.ANCHO, self.ALTO, self.score)
         self.portada = Portada(self.screen, self.ANCHO, self.ALTO)
 
         self.high_scores = HighScores(self.ANCHO, self.ALTO)
@@ -119,7 +123,6 @@ class NivelDos:
             self.ship.dict_ship['mostrar'] = False
             self.bala_jugador.dict_balas['disparar'] = False
             self.tiempo.flag_tiempo = False
-            # self.guardar_puntaje_global(self.global_score)
 
 
     def colision_bala_jugador_con_alien(self):
@@ -134,35 +137,33 @@ class NivelDos:
                             self.score += alien['valor2']
                     elif alien in self.alien_fleet.lista_aliens[17:]:
                             self.score += alien['valor1']
+                    self.dicc_jugador['puntaje'] = self.score
+                    
                     self.explosion_alien = Explosion(alien['rect'].x, alien['rect'].y)
                     self.explosion_alien.active = True
                     self.explosion_alien.sonido_explosion_alien.play()
                     self.puntaje = Score(self.screen, self.ANCHO, self.score, self.global_score, self.ganaste)
                     self.resumen = PantallaResumen(self.screen, self.ANCHO, self.ALTO, self.score, self.segundos, self.global_score, alien['mostrar'])
+                    self.game_over = GameOver(self.screen, self.ANCHO, self.ALTO, self.dicc_jugador['puntaje'])
                     bala['disparar'] = False
                     alien['mostrar'] = False
                 if alien['mostrar']: # Si el alien sigue siendo visible se agrega a la lista nuevos_aliens
                     nuevos_aliens.append(alien)
         self.lista_aliens = nuevos_aliens
+        
         if len(nuevos_aliens) == 0 and alien['mostrar'] == False: # Si mate a todos los aliens:
             self.tiempo.flag_tiempo = False # Frena el tiempo
             self.ganaste = True
             self.resumen.resumen_flag = True # Habilita que se muestre la pantalla reumen
             self.global_score = self.resumen.global_score
             self.musica_nivel_II.stop() # Apaga música de partida
-            self.guardar_puntaje_global(self.global_score)
 
-
-    def guardar_puntaje_global(self, global_score):
-        '''Guarda en un txt el puntaje global de la partida al eliminar
-        a todos los aliens'''
-        try:
-            with open('puntaje_actual.txt', 'w') as archivo:
-                archivo.write(str(global_score))
-        except:
-            print('Error!!!')
-
-
+        if self.ganaste:
+            self.dicc_jugador['puntaje'] = self.global_score
+            
+        return self.dicc_jugador['puntaje']
+        
+    
     def colision_alien_piso(self):
         '''Termina el juego cuando una de las aliens llega al final de la pantalla'''
         contador = 0
@@ -229,13 +230,10 @@ class NivelDos:
                 bala['disparar'] = False
                 if self.contador_colisiones == 1:
                     self.vida3.dict_vida['mostrar'] = False
-                    print('1')
                 elif self.contador_colisiones == 2:
                     self.vida2.dict_vida['mostrar'] = False
-                    print('2')
                 elif self.contador_colisiones == 3:
                     self.vida1.dict_vida['mostrar'] = False
-                    print('3')
                 # Si la nave colisiona se reinicia su posicion
                 self.ship.dict_ship['mostrar'] = True
                 self.ship.dict_ship['rect'].midbottom = self.screen_rect.midbottom
@@ -256,10 +254,9 @@ class NivelDos:
             self.update_screen() # Actualiza visualizaciones y sonidos
             self.check_events()
             self.pressed_key()
-            #if not self.ganaste or not self.game_over.perdiste: # Actualiza tiempo y colisiones si no perdi o no gane (estoy jugando)
             self.update_time()
             self.RELOJ.tick(self.FPS) # controlar la velocidad de actualización del juego
-            self.colision_bala_jugador_con_alien()
+            puntaje = self.colision_bala_jugador_con_alien()
             self.fin_de_tiempo()
             self.colision_alien_piso()
             self.colision_nave_y_alien()
@@ -283,11 +280,9 @@ class NivelDos:
                         self.bala_jugador.disparar_bala()
                         self.bala_jugador.sonido_inicio.play()
                         
-                elif self.game_over.perdiste:
-                        self.portada.blit_portada() # Si perdi, SPACE se usa para ir a la portada e iniciar el juego
-                        
-                elif self.ganaste:
-                    self.portada.blit_portada()
+                elif event.key == pg.K_RETURN and (self.ganaste or self.game_over.perdiste):
+                    self.running =  False
+                    
 
 
     def pressed_key(self):
@@ -342,12 +337,18 @@ class NivelDos:
 
         if self.mostrar_texto_inicio:
                 self.screen.blit(self.text, (self.ANCHO/2 - 57, self.ALTO/2)) # Muestra MISSION X al inicio de la partida
-                
+            
         if self.game_over.perdiste:
-                self.game_over.blit_game_over() # Muestra pantalla de GAME OVER
+            if self.guardar_datos:
+                base_de_datos_puntuacion.insertar_datos(self.dicc_jugador)
+                self.guardar_datos = False
+            self.game_over.blit_game_over() # Muestra pantalla de GAME OVER
                 
         if self.ganaste:
             if self.resumen.resumen_flag:
                 self.resumen.blit_resumen() # Muestra resumen de puntos
+            if self.guardar_datos:
+                base_de_datos_puntuacion.insertar_datos(self.dicc_jugador)
+                self.guardar_datos = False
 
         pg.display.flip()

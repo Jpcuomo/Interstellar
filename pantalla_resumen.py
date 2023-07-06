@@ -1,12 +1,12 @@
 import pygame as pg
 
 class PantallaResumen:
-    def __init__(self, screen, ancho, alto, score, segundos, global_score, ganaste):
+    def __init__(self, screen, ancho, alto, puntaje, segundos, global_score, ganaste):
         self.screen = screen
         self.ancho = ancho
         self.alto = alto
         
-        self.score = score
+        self.score = puntaje
         self.segundos = segundos
         self.global_score = global_score
         
@@ -38,7 +38,7 @@ class PantallaResumen:
         self.line = self.font5.render(f'----------------------------------------', True, 'White')
         
         self.font6 = pg.font.SysFont('Stencil', 20)
-        self.space_txt = self.font6.render('Press SPACE', True, 'White')
+        self.space_txt = self.font6.render('Press ENTER', True, 'Yellow')
         
         self.resumen_flag = False
         
@@ -48,6 +48,7 @@ class PantallaResumen:
             self.superficie_transparente.blit(self.game_score_txt, (self.ancho/2 - 190, self.alto/2 - 200))
             self.superficie_transparente.blit(self.time_score_txt, (self.ancho/2 - 190, self.alto/2 - 150))
             self.superficie_transparente.blit(self.level_score_txt, (self.ancho/2 - 190, self.alto/2 - 100))
-            #self.superficie_transparente.blit(self.line, (self.ancho/2 - 190, self.alto/2 - 70))
-            #self.superficie_transparente.blit(self.global_score_txt, (self.ancho/2 - 190, self.alto/2 - 45))
+            self.superficie_transparente.blit(self.line, (self.ancho/2 - 190, self.alto/2 - 70))
+            self.superficie_transparente.blit(self.global_score_txt, (self.ancho/2 - 190, self.alto/2 - 45))
             self.superficie_transparente.blit(self.space_txt, (self.ancho/2 - 80, self.alto/2 + 130))
+            
